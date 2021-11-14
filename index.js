@@ -13,7 +13,10 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://snippetmanager.netlify.app"],
+    origin: [
+      "http://localhost:3000",
+      "https://619131de944d5f5324c98534--clever-mccarthy-7da2df.netlify.app",
+    ],
     credentials: true,
   })
 );
