@@ -25,12 +25,12 @@ router.post("/", async (req, res) => {
       });
 
     // make sure no account exists for this email
-    /* 
+
     const existingUser = await User.findOne({ email });
     if (existingUser)
       return res.status(400).json({
         errorMessage: "An account with this email already exists.",
-      }); */
+      });
 
     // hash the password
 
