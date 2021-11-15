@@ -26,7 +26,7 @@ router.post("/", auth, async (req, res) => {
 
     const newSnippet = new Snippet({
       title,
-      checked: false,
+      done: false,
       parent,
       user: req.user,
     });
@@ -81,14 +81,14 @@ router.put("/:id", auth, async (req, res) => {
 
 router.put("/check/:id", auth, async (req, res) => {
   try {
-    const { title, check } = req.body;
+    const { done } = req.body;
     const snippetId = req.params.id;
 
     // validation
 
-    if (!check) {
+    if (!done) {
       return res.status(400).json({
-        errorMessage: "You need to enter the check.",
+        errorMessage: "You need to enter the done.",
       });
     }
 
@@ -107,7 +107,7 @@ router.put("/check/:id", auth, async (req, res) => {
     if (originalSnippet.user.toString() !== req.user)
       return res.status(401).json({ errorMessage: "Unauthorized." });
 
-    originalSnippet.checked = check;
+    originalSnippet.done = done;
 
     const savedSnippet = await originalSnippet.save();
 
