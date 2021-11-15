@@ -86,7 +86,7 @@ router.put("/check/:id", auth, async (req, res) => {
 
     // validation
 
-    if (!done) {
+    if (done === undefined) {
       return res.status(400).json({
         errorMessage: "You need to enter the done.",
       });
