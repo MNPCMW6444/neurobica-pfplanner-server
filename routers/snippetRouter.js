@@ -13,20 +13,20 @@ router.get("/", auth, async (req, res) => {
 
 router.post("/", auth, async (req, res) => {
   try {
-    const { title, description, code } = req.body;
+    const { title, parent } = req.body;
 
     // validation
 
-    if (!description && !code) {
+    if (!title) {
       return res.status(400).json({
-        errorMessage: "You need to enter at least a description or some code.",
+        errorMessage: "You need to enter the title.",
       });
     }
 
     const newSnippet = new Snippet({
       title,
-      description,
-      code,
+      checked: false,
+      parent,
       user: req.user,
     });
 
@@ -40,14 +40,14 @@ router.post("/", auth, async (req, res) => {
 
 router.put("/:id", auth, async (req, res) => {
   try {
-    const { title, description, code } = req.body;
+    const { title } = req.body;
     const snippetId = req.params.id;
 
     // validation
 
-    if (!description && !code) {
+    if (!title) {
       return res.status(400).json({
-        errorMessage: "You need to enter at least a description or some code.",
+        errorMessage: "You need to enter the title.",
       });
     }
 
@@ -67,8 +67,44 @@ router.put("/:id", auth, async (req, res) => {
       return res.status(401).json({ errorMessage: "Unauthorized." });
 
     originalSnippet.title = title;
-    originalSnippet.description = description;
-    originalSnippet.code = code;
+
+    const savedSnippet = await originalSnippet.save();
+
+    res.json(savedSnippet);
+  } catch (err) {
+    res.status(500).send();
+  }
+});
+
+router.put("/check/:id", auth, async (req, res) => {
+  try {
+    const { title, check } = req.body;
+    const snippetId = req.params.id;
+
+    // validation
+
+    if (!check) {
+      return res.status(400).json({
+        errorMessage: "You need to enter the check.",
+      });
+    }
+
+    if (!snippetId)
+      return res.status(400).json({
+        errorMessage: "Snippet ID not given. Please contact the developer.",
+      });
+
+    const originalSnippet = await Snippet.findById(snippetId);
+    if (!originalSnippet)
+      return res.status(400).json({
+        errorMessage:
+          "No snippet with this ID was found. Please contact the developer.",
+      });
+
+    if (originalSnippet.user.toString() !== req.user)
+      return res.status(401).json({ errorMessage: "Unauthorized." });
+
+    originalSnippet.checked = check;
 
     const savedSnippet = await originalSnippet.save();
 
