@@ -7,6 +7,7 @@ router.get("/", auth, async (req, res) => {
     const snippets = await Snippet.find({ user: req.user });
     res.json(snippets);
   } catch (err) {
+    console.log(err);
     res.status(500).send();
   }
 });
@@ -34,6 +35,7 @@ router.post("/", auth, async (req, res) => {
 
     res.json(savedSnippet);
   } catch (err) {
+    console.log(err);
     res.status(500).send();
   }
 });
@@ -72,6 +74,7 @@ router.put("/:id", auth, async (req, res) => {
 
     res.json(savedSnippet);
   } catch (err) {
+    console.log(err);
     res.status(500).send();
   }
 });
@@ -110,6 +113,7 @@ router.put("/check/:id", auth, async (req, res) => {
 
     res.json(savedSnippet);
   } catch (err) {
+    console.log(err);
     res.status(500).send();
   }
 });
@@ -139,6 +143,7 @@ router.delete("/:id", auth, async (req, res) => {
 
     res.json(existingSnippet);
   } catch (err) {
+    console.log(err);
     res.status(500).send();
   }
 });
