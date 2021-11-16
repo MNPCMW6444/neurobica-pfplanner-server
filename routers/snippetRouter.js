@@ -111,6 +111,18 @@ router.put("/check/:id", auth, async (req, res) => {
 
     const savedSnippet = await originalSnippet.save();
 
+    const allsnippets = await Snippet.find({ user: req.user });
+
+    if (done) {
+      allsnippets.forEach((snippet) => {
+        const originalSnippet = await Snippet.findById(snippet._id);
+        if (originalSnippet.parent === savedSnippet._id) {
+          originalSnippet.done = done;
+          await originalSnippet.save();
+        }
+      });
+    }
+
     res.json(savedSnippet);
   } catch (err) {
     console.log(err);
