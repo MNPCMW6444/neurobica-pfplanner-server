@@ -119,7 +119,7 @@ router.put("/check/:id", auth, async (req, res) => {
         console.log(originalSnippet.parent);
         console.log(savedSnippet._id);
         if (originalSnippet.parent === savedSnippet._id) {
-          originalSnippet.done = done;
+          originalSnippet.done = true;
           await originalSnippet.save();
         }
       });
