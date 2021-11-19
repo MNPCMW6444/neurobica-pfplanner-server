@@ -136,7 +136,7 @@ async function logicitB(req) {
             JSON.stringify(allsnippets[i].parent).toString().length - 1
           )
       );
-      if (parent.done == false) {
+      if (parent && parent.done == false) {
         const brothers = await Snippet.find({ parent: parent._id });
         let isTWET = true;
 
@@ -145,9 +145,11 @@ async function logicitB(req) {
             isTWET = false;
           }
         }
-        if (isTWET) parent.done = true;
-        await parent.save();
-        return false;
+        if (isTWET) {
+          parent.done = true;
+          await parent.save();
+          return false;
+        }
       }
     }
   }
@@ -168,8 +170,23 @@ async function unckeck(savedSnippet) {
   }
 }
 
+async function unckeckKids(savedSnippet) {
+  const kids = await Snippet.find({ parent: savedSnippet._id });
+  for (let i = 0; i < kids.length; i++) {
+    const kid = await Snippet.findById(
+      JSON.stringify(kids[i]._id)
+        .toString()
+        .substring(1, JSON.stringify(kids[i]._id).toString().length - 1)
+    );
+    kid.done = false;
+    const newkid = await kid.save();
+    await unckeckKids(newkid);
+  }
+}
+
 router.put("/check/:id", auth, async (req, res) => {
-  try {
+  /*   console.log("Started");
+   */ try {
     const { done } = req.body;
     const snippetId = req.params.id;
 
@@ -202,11 +219,13 @@ router.put("/check/:id", auth, async (req, res) => {
 
     if (!done) {
       await unckeck(savedSnippet);
+      await unckeckKids(savedSnippet);
     }
 
     while (!(await logicitB(req)));
     while (!(await logicit(req)));
-
+    /*     console.log("Finished");
+     */
     res.json(savedSnippet);
   } catch (err) {
     console.log(err);
