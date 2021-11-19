@@ -81,6 +81,53 @@ router.put("/:id", auth, async (req, res) => {
   }
 });
 
+async function logicit(req) {
+  /*   console.log("CALLLLEED");
+   */ const allsnippets = await Snippet.find({ user: req.user });
+  for (let i = 0; i < allsnippets.length; i++) {
+    if (allsnippets[i].parent) {
+      const it = await Snippet.findById(
+        JSON.stringify(allsnippets[i]._id)
+          .toString()
+          .substring(
+            1,
+            JSON.stringify(allsnippets[i]._id).toString().length - 1
+          )
+      );
+      const parent = await Snippet.findById(
+        JSON.stringify(allsnippets[i].parent)
+          .toString()
+          .substring(
+            1,
+            JSON.stringify(allsnippets[i].parent).toString().length - 1
+          )
+      );
+      if (parent && parent.done && !it.done) {
+        /*         console.log(parent.done);
+         */ it.done = parent.done;
+        const checkecd = await it.save();
+        /*         console.log("CHECKED!!!!   " + checkecd._id);
+         */ return false;
+      }
+    }
+  }
+  /*   console.log("FINISHED!!!");
+   */ return true;
+}
+
+async function unckeck(savedSnippet) {
+  if (savedSnippet.parent) {
+    const parent = await Snippet.findById(
+      JSON.stringify(savedSnippet.parent)
+        .toString()
+        .substring(1, JSON.stringify(savedSnippet.parent).toString().length - 1)
+    );
+    parent.done = false;
+    const newsavedSnippet = await parent.save();
+    await unckeck(newsavedSnippet);
+  }
+}
+
 router.put("/check/:id", auth, async (req, res) => {
   try {
     const { done } = req.body;
@@ -111,44 +158,13 @@ router.put("/check/:id", auth, async (req, res) => {
 
     originalSnippet.done = done;
 
-    let savedSnippet = await originalSnippet.save();
+    const savedSnippet = await originalSnippet.save();
 
-    const allsnippets = await Snippet.find({ user: req.user });
-
-    const checkrec = async (snippet, log) => {
-      if (snippet) {
-        const originalSnippet2 = await Snippet.findById(snippet._id);
-        if (originalSnippet2) {
-          if (log) {
-            console.log(JSON.stringify(savedSnippet._id));
-            console.log(JSON.stringify(originalSnippet2.parent));
-            console.log("  ");
-          }
-          if (
-            JSON.stringify(savedSnippet._id) ===
-            JSON.stringify(originalSnippet2.parent)
-          ) {
-            console.log("CHKCHKCHK");
-            originalSnippet2.done = true;
-            savedSnippet = await originalSnippet2.save();
-          } else if (originalSnippet2 && originalSnippet2.parent) {
-            const id = JSON.stringify(originalSnippet2.parent);
-            const pd = '"6197d73f8c55270844fb0a01"';
-            const log = id === pd ? true : false;
-            /*  console.log("id IS " + id);
-            console.log("pd IS " + pd);
-            console.log("log IS " + log);
-            console.log(); */
-            checkrec(await Snippet.findById(originalSnippet2.parent), log);
-          }
-        }
-      }
-    };
-
-    if (done) {
-      for (let i = 0; i < allsnippets.length; i++)
-        checkrec(allsnippets[i], false);
+    if (!done) {
+      await unckeck(savedSnippet);
     }
+
+    while (!(await logicit(req)));
 
     res.json(savedSnippet);
   } catch (err) {
