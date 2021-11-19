@@ -115,6 +115,46 @@ async function logicit(req) {
    */ return true;
 }
 
+async function logicitB(req) {
+  /*   console.log("CALLLLEED");
+   */ const allsnippets = await Snippet.find({ user: req.user });
+  for (let i = 0; i < allsnippets.length; i++) {
+    if (allsnippets[i].parent) {
+      const it = await Snippet.findById(
+        JSON.stringify(allsnippets[i]._id)
+          .toString()
+          .substring(
+            1,
+            JSON.stringify(allsnippets[i]._id).toString().length - 1
+          )
+      );
+      const parent = await Snippet.findById(
+        JSON.stringify(allsnippets[i].parent)
+          .toString()
+          .substring(
+            1,
+            JSON.stringify(allsnippets[i].parent).toString().length - 1
+          )
+      );
+      if (parent.done == false) {
+        const brothers = await Snippet.find({ parent: parent._id });
+        let isTWET = true;
+
+        for (let i = 0; i < brothers.length; i++) {
+          if (brothers[i].done == false) {
+            isTWET = false;
+          }
+        }
+        if (isTWET) parent.done = true;
+        await parent.save();
+        return false;
+      }
+    }
+  }
+  /*   console.log("FINISHED!!!");
+   */ return true;
+}
+
 async function unckeck(savedSnippet) {
   if (savedSnippet.parent) {
     const parent = await Snippet.findById(
@@ -164,6 +204,7 @@ router.put("/check/:id", auth, async (req, res) => {
       await unckeck(savedSnippet);
     }
 
+    while (!(await logicitB(req)));
     while (!(await logicit(req)));
 
     res.json(savedSnippet);
