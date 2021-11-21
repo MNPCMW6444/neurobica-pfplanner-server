@@ -7,6 +7,7 @@ const snippetSchema = new mongoose.Schema(
     done: { type: Boolean, required: true },
     parent: { type: ObjectId },
     user: { type: ObjectId, required: true },
+    order: { type: Number, required: true },
   },
   {
     timestamps: true,
