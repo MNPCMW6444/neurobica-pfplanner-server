@@ -44,8 +44,6 @@ router.put("/:id", auth, async (req, res) => {
   try {
     const { title } = req.body;
     const snippetId = req.params.id;
-    console.log(snippetId);
-    console.log(title);
 
     // validation
 
@@ -71,6 +69,45 @@ router.put("/:id", auth, async (req, res) => {
       return res.status(401).json({ errorMessage: "Unauthorized." });
 
     originalSnippet.title = title;
+
+    const savedSnippet = await originalSnippet.save();
+
+    res.json(savedSnippet);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send();
+  }
+});
+
+router.put("/o/:id", auth, async (req, res) => {
+  try {
+    const { newOrder } = req.body;
+    const snippetId = req.params.id;
+
+    // validation
+
+    if (!newOrder) {
+      return res.status(400).json({
+        errorMessage: "You need to enter the newOrder.",
+      });
+    }
+
+    if (!snippetId)
+      return res.status(400).json({
+        errorMessage: "Snippet ID not given. Please contact the developer.",
+      });
+
+    const originalSnippet = await Snippet.findById(snippetId);
+    if (!originalSnippet)
+      return res.status(400).json({
+        errorMessage:
+          "No snippet with this ID was found. Please contact the developer.",
+      });
+
+    if (originalSnippet.user.toString() !== req.user)
+      return res.status(401).json({ errorMessage: "Unauthorized." });
+
+    originalSnippet.order = newOrder;
 
     const savedSnippet = await originalSnippet.save();
 
