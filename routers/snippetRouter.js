@@ -29,6 +29,7 @@ router.post("/", auth, async (req, res) => {
       done: false,
       parent,
       user: req.user,
+      order: Math.random(6) * 10000000000000000,
     });
 
     const savedSnippet = await newSnippet.save();
