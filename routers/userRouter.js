@@ -131,7 +131,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.get("/loggedIn", (req, res) => {
+router.get("/loggedIn", async (req, res) => {
   try {
     const token = req.cookies.token;
 
@@ -145,7 +145,7 @@ router.get("/loggedIn", (req, res) => {
   }
 });
 
-router.get("/logOut", (req, res) => {
+router.get("/logOut", async (req, res) => {
   try {
     res
       .cookie("token", "", {
@@ -161,6 +161,47 @@ router.get("/logOut", (req, res) => {
         expires: new Date(0),
       })
       .send();
+  } catch (err) {
+    return res.json(null);
+  }
+});
+
+router.get("/getSnippets", async (req, res) => {
+  try {
+    const token = req.cookies.token;
+
+    if (!token) return res.json(null);
+
+    const validatedUser = jwt.verify(token, process.env.JWT_SECRET);
+
+    res.json(validatedUser.tasksString);
+  } catch (err) {
+    return res.json(null);
+  }
+});
+
+router.put("/putSnippets", async (req, res) => {
+  try {
+    const { newTaskString } = req.body;
+    const token = req.cookies.token;
+
+    if (!token) return res.json(null);
+
+    const validatedUser = jwt.verify(token, process.env.JWT_SECRET);
+
+    const email = validatedUser.email;
+    const passwordHash = validatedUser.passwordHash;
+    const tasksString = newTaskString;
+
+    const newUser = new User({
+      email,
+      passwordHash,
+      tasksString,
+    });
+
+    const savedUser = await newUser.save();
+
+    res.json(savedUser.tasksString);
   } catch (err) {
     return res.json(null);
   }
